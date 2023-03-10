@@ -13,7 +13,8 @@ import SVGKit
 final class NetworkManager {
 
     private let keyHeader = "X-Yandex-API-Key"
-    private let key = "9ec70664-f9c5-41b7-90f7-5c3139d2a9cf"
+    private let key = "b7f3fefb-86ba-4884-8cc1-4ed521593619"
+    static private var imageCache = NSCache<NSString, UIImage>()
 
     func download(location: Location,
                   copmletionHandler: ((WeatherResponseCodable?) -> Void)?) {
@@ -46,6 +47,7 @@ final class NetworkManager {
                 decoder.dateDecodingStrategy = .secondsSince1970
                 let weatherCodable = try decoder.decode(WeatherResponseCodable.self, from: data)
                 copmletionHandler?(weatherCodable)
+                
 
 
             } catch let error {
@@ -58,23 +60,26 @@ final class NetworkManager {
 
 
 
-     static func downloadImage(from URLString: String, with completion: @escaping (_ response: (status: Bool, pngdata: Data? ) ) -> Void) {
+    static func downloadImage(from URLString: String?, with completion: @escaping (_ response: (status: Bool, image: UIImage? ) ) -> Void) {
 
+        DispatchQueue.global().async {
 
-        guard let url = URL(string: URLString) else {
-            completion((status: false, pngdata: nil))
-            return
+            guard let url = URL(string: URLString ?? "") else {
+                completion((status: false, image: nil))
+                return
+            }
+
+            if let cachedImage = imageCache.object(forKey: url.absoluteString as NSString) {
+                completion((status: true, image: cachedImage))
+            } else {
+                let receivedicon = SVGKImage(contentsOf: url)
+                guard let image = receivedicon?.uiImage else {
+                    completion((status: false, image: nil))
+                    return
+                }
+                self.imageCache.setObject(image, forKey: url.absoluteString as NSString)
+                completion((status: true, image: image))
+            }
         }
-
-         let receivedicon = SVGKImage(contentsOf: url)
-
-         guard let image = receivedicon?.uiImage,
-               let pngdata = image.pngData() else {
-
-                 completion((status: false, pngdata: nil))
-                 return
-             }
-
-         completion((status: true, pngdata: pngdata))
     }
 }

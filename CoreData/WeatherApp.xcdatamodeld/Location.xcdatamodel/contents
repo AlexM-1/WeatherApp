@@ -2,16 +2,16 @@
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="21513" systemVersion="21G115" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
     <entity name="DailyFact" representedClassName="DailyFact" syncable="YES" codeGenerationType="class">
         <attribute name="condition" optional="YES" attributeType="String"/>
-        <attribute name="conditionIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="conditionIcon" optional="YES" attributeType="String"/>
         <attribute name="date" optional="YES" attributeType="String"/>
-        <attribute name="dayIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="dayIcon" optional="YES" attributeType="String"/>
         <attribute name="dayTemp" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="eveningIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="eveningIcon" optional="YES" attributeType="String"/>
         <attribute name="eveningTemp" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="humidity" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="morningIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="morningIcon" optional="YES" attributeType="String"/>
         <attribute name="morningTemp" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
-        <attribute name="nightIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="nightIcon" optional="YES" attributeType="String"/>
         <attribute name="nightTemp" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="precProb" optional="YES" attributeType="Integer 16" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="sunrise" optional="YES" attributeType="String"/>
@@ -26,7 +26,7 @@
     <entity name="Forecast" representedClassName="Forecast" syncable="YES" codeGenerationType="class">
         <attribute name="cloudness" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="condition" optional="YES" attributeType="String"/>
-        <attribute name="conditionIcon" optional="YES" attributeType="Binary"/>
+        <attribute name="conditionIcon" optional="YES" attributeType="String"/>
         <attribute name="date" optional="YES" attributeType="String"/>
         <attribute name="humidity" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="partName" optional="YES" attributeType="String"/>

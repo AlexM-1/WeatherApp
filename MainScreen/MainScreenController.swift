@@ -34,7 +34,7 @@ final class MainScreenController: UIPageViewController, UIPageViewControllerDele
             
             let VC = OneLocationVC(viewModel: OneLocationViewModel(coordinator: self.viewModel.coordinator, location: location))
             
-            VC.viewModel.location = location
+          //  VC.viewModel.location = location
             let NC = UINavigationController(rootViewController: VC)
             navContrArray.append(NC)
         }
@@ -88,7 +88,7 @@ final class MainScreenController: UIPageViewController, UIPageViewControllerDele
         configurePageControl()
         
         NotificationCenter.default.addObserver(forName: NSNotification.Name("CityManagementVCisBeingDismissed"), object: nil, queue: OperationQueue.main) { notification in
-            self.initOrderedViewControllers()
+                self.initOrderedViewControllers()
         }
     }
     

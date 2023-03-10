@@ -10,11 +10,11 @@ import UIKit
 
 
 final class CoreDataManager {
-
-
+    
+    
     static let `default` = CoreDataManager()
-
-
+    
+    
     // MARK: - Core Data stack
     
     lazy var persistentContainer: NSPersistentContainer = {
@@ -25,7 +25,7 @@ final class CoreDataManager {
             }
         })
         
-       // container.viewContext.automaticallyMergesChangesFromParent = true
+        //container.viewContext.automaticallyMergesChangesFromParent = true
         
         return container
     }()
@@ -33,24 +33,24 @@ final class CoreDataManager {
     
     // MARK: - Core Data Saving support
     
-
+    
     lazy var contextMain: NSManagedObjectContext = {
         let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
         context.persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
         return context
     }()
-
-
+    
+    
     lazy var contextBackground: NSManagedObjectContext = {
         let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         context.persistentStoreCoordinator = persistentContainer.persistentStoreCoordinator
         return context
     }()
-
-
-
+    
+    
+    
     // MARK: - Core Data Saving support
-
+    
     func saveMainContext () {
         if contextMain.hasChanges {
             do {
@@ -63,13 +63,13 @@ final class CoreDataManager {
             }
         }
     }
-
-
+    
+    
     func saveBackgroundContext () {
         if contextBackground.hasChanges {
             do {
                 try contextBackground.save()
-
+                
             } catch {
                 // Replace this implementation with code to handle the error appropriately.
                 // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
@@ -79,8 +79,8 @@ final class CoreDataManager {
         }
     }
     
-
-
+    
+    
     func addLocation(location: LocationProtocol) {
         guard self.isUniqueLocation(newLocation: location) else {return}
         let newLocation = Location(context: self.contextMain)
@@ -90,36 +90,34 @@ final class CoreDataManager {
         newLocation.latitude = location.latitude
         newLocation.longitude = location.longitude
         saveMainContext()
+        
     }
     
     func deleteLocation(location: Location){
         contextMain.delete(location)
         saveMainContext()
     }
-
+    
     func deleteForecasts(location: Location) {
-
         let request = Forecast.fetchRequest()
         request.predicate = NSPredicate(format: "location == %@", location)
         let forecasts = (try? contextBackground.fetch(request))
-
+        
         if let forecasts = forecasts {
             for forecast in forecasts {
                 contextBackground.delete(forecast)
             }
         }
-        self.saveBackgroundContext()
-
-
+        //self.saveBackgroundContext()
     }
-
-
-
+    
+    
+    
     private func isUniqueLocation(newLocation: LocationProtocol) -> Bool {
-
+        
         let request = Location.fetchRequest()
         let locations = (try? contextMain.fetch(request)) ?? []
-
+        
         var isUniqueLocation = true
         locations.forEach { location in
             if newLocation.city == location.city,
@@ -136,39 +134,30 @@ final class CoreDataManager {
     func reloadDailyFact(in location: Location,
                          with weatherResponse: WeatherResponseCodable?,
                          completion: @escaping ()->Void)
-
+    
     {
         contextBackground.perform {
-
+            
             let newDailyFact = DailyFact(context: self.contextBackground)
-           location.dailyFact = newDailyFact
+            location.dailyFact = newDailyFact
             location.setValue(newDailyFact, forKey: "DailyFact")
-
+            
             newDailyFact.condition = weatherResponse?.fact.condition
             newDailyFact.date = weatherResponse?.now_dt
             newDailyFact.humidity = Int16((weatherResponse?.fact.humidity)!)
             newDailyFact.precProb = Int16((weatherResponse?.fact.prec_prob)!)
             newDailyFact.sunrise = weatherResponse?.forecasts.first?.sunrise
             newDailyFact.sunset = weatherResponse?.forecasts.first?.sunset
-
-            var icon = makeIconPath(icon: weatherResponse?.fact.icon, isDark: false)
-
-            NetworkManager.downloadImage(from: icon) { response in
-                if response.status
-                {
-                    newDailyFact.conditionIcon = response.pngdata
-                    self.saveBackgroundContext()
-                    completion()
-                }
-            }
-
+            
+            newDailyFact.conditionIcon = makeIconPath(icon: weatherResponse?.fact.icon, isDark: false)
+            
             let day = weatherResponse?.forecasts.first?.parts.day
             let evening = weatherResponse?.forecasts.first?.parts.evening
             let morning = weatherResponse?.forecasts.first?.parts.morning
             let night = weatherResponse?.forecasts.first?.parts.night
-
+            
             let temp = [day?.temp_max, evening?.temp_max, morning?.temp_max, night?.temp_max, day?.temp_min, evening?.temp_min, morning?.temp_min, night?.temp_min].compactMap { $0 }.sorted()
-
+            
             newDailyFact.tempMin = Int16(temp.first!)
             newDailyFact.tempMax = Int16(temp.last!)
             newDailyFact.morningTemp = Int16(morning!.temp_avg)
@@ -178,83 +167,46 @@ final class CoreDataManager {
             newDailyFact.tempNow = Int16((weatherResponse?.fact.temp)!)
             newDailyFact.uptime = weatherResponse?.fact.uptime
             newDailyFact.windSpeed = Int16((weatherResponse?.fact.wind_speed)!)
-
-
-            icon = makeIconPath(icon: day?.icon)
-            NetworkManager.downloadImage(from: icon) { response in
-                if response.status
-                {
-                    newDailyFact.dayIcon = response.pngdata
-                    self.saveBackgroundContext()
-                    completion()
-                }
-            }
-
-            icon = makeIconPath(icon: morning?.icon)
-            NetworkManager.downloadImage(from: icon) { response in
-                if response.status
-                {
-                    newDailyFact.morningIcon = response.pngdata
-                    self.saveBackgroundContext()
-                    completion()
-                }
-            }
-
-            icon = makeIconPath(icon: evening?.icon)
-            NetworkManager.downloadImage(from: icon) { response in
-                if response.status
-                {
-                    newDailyFact.eveningIcon = response.pngdata
-                    self.saveBackgroundContext()
-                    completion()
-                }
-            }
-
-            icon = makeIconPath(icon: night?.icon)
-            NetworkManager.downloadImage(from: icon) { response in
-                if response.status
-                {
-                    newDailyFact.nightIcon = response.pngdata
-                    self.saveBackgroundContext()
-                    completion()
-                }
-            }
-
+            newDailyFact.dayIcon = makeIconPath(icon: day?.icon)
+            newDailyFact.morningIcon = makeIconPath(icon: morning?.icon)
+            newDailyFact.eveningIcon = makeIconPath(icon: evening?.icon)
+            newDailyFact.nightIcon = makeIconPath(icon: night?.icon)
+            
             self.saveBackgroundContext()
             completion()
-
+            
         }
     }
-
-
-
+    
+    
+    
     func reloadForecasts (in location: Location,
                           forecastsCodable: [ForecastsCodable],
                           completion: @escaping ()->Void)  {
-
+        
         contextBackground.perform {
-
+            
             for forecast in forecastsCodable {
-
+                
                 let day = forecast.parts.day
                 let evening = forecast.parts.evening
                 let morning = forecast.parts.morning
                 let night = forecast.parts.night
-
+                
                 let parts = [morning, day, evening, night]
-
-
+                
+                
                 let temp = [morning.temp_max, morning.temp_min,
                             day.temp_max, day.temp_min,
                             evening.temp_max, evening.temp_min,
                             night.temp_max, night.temp_min
                 ].compactMap { $0 }.sorted()
-
+                
                 for (index, part) in parts.enumerated() {
-
+                    
                     let newForecast = Forecast(context: self.contextBackground)
                     location.addToForecasts(newForecast)
-
+                    
                     newForecast.tempFeelsLike = Int16(part.feels_like)
                     newForecast.humidity = Int16(part.humidity)
                     newForecast.condition = part.condition
@@ -271,8 +223,8 @@ final class CoreDataManager {
                     newForecast.precType = Int16(part.prec_type)
                     newForecast.precStrength = part.prec_strength
                     newForecast.cloudness = part.cloudness
-
-
+                    
+                    
                     switch index {
                     case 0:
                         newForecast.partName = "morning"
@@ -285,28 +237,17 @@ final class CoreDataManager {
                     default:
                         newForecast.partName = ""
                     }
-
+                    
                     var iconStr = "https://yastatic.net/weather/i/icons/funky/dark/"
                     iconStr += part.icon + ".svg"
-
-                    NetworkManager.downloadImage(from: iconStr) { response in
-                        if response.status
-                        {
-                            newForecast.conditionIcon = response.pngdata
-                            self.saveBackgroundContext()
-                            completion()
-                        }
-                    }
-
+                    newForecast.conditionIcon = iconStr
+                    
                     self.saveBackgroundContext()
                     completion()
                 }
-
             }
-
         }
- 
-
+        
     }
-
+    
 }

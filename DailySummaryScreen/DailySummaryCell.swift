@@ -40,11 +40,11 @@ final class DailySummaryCell: UITableViewCell {
         font: UIFont(name: "Rubik-Regular", size: 18))
     
     
-    private var conditionIcon: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.clipsToBounds = true
-        return imageView
+    private var conditionIcon: WebImageView = {
+        let webImageView = WebImageView()
+        webImageView.translatesAutoresizingMaskIntoConstraints = false
+        webImageView.clipsToBounds = true
+        return webImageView
     }()
     
     
@@ -84,9 +84,8 @@ final class DailySummaryCell: UITableViewCell {
             conditionLabel.text = value.firstUppercased
         }
         
-        if let pngData = forecast.conditionIcon {
-            conditionIcon.image = UIImage(data: pngData)
-        }
+        conditionIcon.set(imageUrl: forecast.conditionIcon)
+        
         self.tableView.reloadData()
     }
     
